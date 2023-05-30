@@ -44,6 +44,7 @@ class CategoryUpdateView(UpdateView):
         super().post(request, *args, **kwargs)
         data = json.loads(request.body)
         self.object.name = data.get("name")
+        self.object.save()
 
         return JsonResponse(self.get_object().serialize())
 

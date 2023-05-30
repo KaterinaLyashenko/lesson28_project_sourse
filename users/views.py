@@ -7,11 +7,12 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
+from avito import settings
 from users.models import User, Location
 
 TOTAL_ON_PAGE = 5
 
-class UserListView(ListView):
+"""class UserListView(ListView):
     queryset = User.objects.prefetch_related("locations").annotate(total_ads=Count("ad", filter=Q(ad__is__published=True)))
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
@@ -23,7 +24,42 @@ class UserListView(ListView):
             "total": paginator.count,
             "num_pages": paginator.num_pages,
             "items": [{**user.serialize(), "total_ads":user.total_ads} for user in users_on_page]},
-            safe=False)
+            safe=False)"""
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UserListView(ListView):
+    model = User
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+
+        paginator = Paginator(
+            self.object_list.order_by('username').annotate(total_ads=Count('ad', filter=Q(ad__is_published=True))),
+            TOTAL_ON_PAGE)
+        page_number = request.GET.get('page', 1)
+
+        page_obj = paginator.get_page(page_number)
+
+        users = []
+        for user in page_obj:
+            users.append(
+                {
+                    'id': user.id,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'username': user.username,
+                    "role": user.role,
+                    "age": user.age,
+                    "total_ads": user.total_ads
+                }
+            )
+
+        response = {
+            'total': page_obj.paginator.count,
+            'num_pages': page_obj.paginator.num_pages,
+            'items': users
+        }
+        return JsonResponse(response, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserCreateView(CreateView):
@@ -61,6 +97,10 @@ class UserUpdateView(UpdateView):
                 self.object.locations.add(loc)
         if "username" in data:
             self.object.username = data["username"]
+        if "first_name" in data:
+            self.object.first_name = data["first_name"]
+
+        self.object.save()
 
         return JsonResponse(self.get_object().serialize())
 

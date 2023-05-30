@@ -2,6 +2,18 @@ from django.db import models
 from django.db.models import TextChoices
 
 
+class Location(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    lng = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+
+    class Meta:
+        verbose_name = "Местположение"
+        verbose_name_plural = "Местоположения"
+
+    def __str__(self):
+        return self.name
+
 class UserRoles(TextChoices):
     MEMBER = "member", "Пользователь"
     ADMIN = "admin", "Админ"
@@ -13,7 +25,7 @@ class User(models.Model):
     username = models.CharField(max_length=200)
     password = models.CharField(max_length=200)
     age = models.PositiveSmallIntegerField()
-    locations = models.ManyToManyField('Location')
+    locations = models.ManyToManyField(Location)
     role = models.CharField(max_length=9, choices=UserRoles.choices, default=UserRoles.MEMBER)
 
     class Meta:
@@ -35,14 +47,4 @@ class User(models.Model):
             "role": self.role,
         }
 
-class Location(models.Model):
-    name = models.CharField(max_length=200, unique=True)
-    lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    lng = models.DecimalField(max_digits=9, decimal_places=6, null=True)
 
-    class Meta:
-        verbose_name = "Местположение"
-        verbose_name_plural = "Местоположения"
-
-    def __str__(self):
-        return self.name

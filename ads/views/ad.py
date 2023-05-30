@@ -48,23 +48,39 @@ class AdDetailView(DetailView):
 @method_decorator(csrf_exempt, name='dispatch')
 class AdUpdateView(UpdateView):
     model = Ad
-    fields = "__all__"
+    fields = '__all__'
+
     def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
-        data = json.loads(request.body)
+        ad_data = json.loads(request.body)
 
-        if "name" in data:
-            self.object.name = data.get("name")
-        if "price" in data:
-            self.object.price = data.get("price")
-        if "author_id" in data:
-            author = get_object_or_404(User, pk=data.get("author_id"))
+        if 'name' in ad_data:
+            self.object.name = ad_data['name']
+        if 'author_id' in ad_data:
+            author = get_object_or_404(User, pk=ad_data['author_id'])
             self.object.author = author
-        if "category" in data:
-            category = get_object_or_404(Category, name=data.get("category"))
+        if 'price' in ad_data:
+            self.object.price = ad_data['price']
+        if 'is_published' in ad_data:
+            self.object.is_published = ad_data['is_published']
+        if 'category_id' in ad_data:
+            category = get_object_or_404(Category, pk=ad_data['author_id'])
             self.object.category = category
 
-        return JsonResponse(self.get_object().serialize())
+        self.object.save()
+        return JsonResponse(
+            {
+                'id': self.object.id,
+                'name': self.object.name,
+                'author': self.object.author.username,
+                'price': self.object.price,
+                'description': self.object.description,
+                "address": [loc.name for loc in self.object.author.locations.all()],
+                'is_published': self.object.is_published,
+                'category': self.object.category.name
+            }
+        )
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AdDeleteView(DeleteView):
@@ -80,6 +96,6 @@ class AdUploadImageView(UpdateView):
     fields = "__all__"
     def post(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
-        self.object.iamge = request.FILES.get("image")
+        self.object.image = request.FILES.get("image")
         self.object.save()
         return JsonResponse(self.get_object().serialize())
