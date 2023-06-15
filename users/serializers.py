@@ -42,6 +42,7 @@ class UserCreateUpdateSerializer(ModelSerializer):
                 instance.locations.add(loc)
         return instance
 
+
     class Meta:
         model = User
         fields = '__all__'

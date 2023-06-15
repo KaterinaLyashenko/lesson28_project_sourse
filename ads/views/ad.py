@@ -1,21 +1,34 @@
-import json
-
-from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from ads.models import Ad
+from ads.permissions import IsOwner, IsStaff
 from ads.serializer import AdListSerializer, AdSerializer, AdDetailSerializer
 
 class AdViewSet(ModelViewSet):
     queryset = Ad.objects.all().order_by("-price")
-    serializers = {"list": AdListSerializer, "retrieve": AdDetailSerializer}
+    serializers = {
+        "list": AdListSerializer,
+        "retrieve": AdDetailSerializer,
+    }
     default_serializer = AdSerializer
+
+    permissions = {
+        "retrieve": [IsAuthenticated],
+        "create": [IsAuthenticated],
+        "update": [IsOwner | IsStaff],
+        "destroy": [IsOwner | IsStaff],
+        "partial_update": [IsOwner | IsStaff]
+    }
+    default_permission = [AllowAny]
+
+    def get_permissions(self):
+        self.permission_classes = self.permissions.get(self.action, self.default_permission)
+        return super().get_permissions()
 
     def get_serializer_class(self):
         return self.serializers.get(self.action, self.default_serializer)
