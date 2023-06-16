@@ -1,6 +1,10 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import TextChoices
+
+from avito.settings import FORBIDDEN_DOMAIN
+from users.validators import check_age
 
 
 class Location(models.Model):
@@ -21,9 +25,14 @@ class UserRoles(TextChoices):
     MODERATOR = "moderator", "Модератор"
 
 class User(AbstractUser):
-    age = models.PositiveSmallIntegerField()
+    # age = models.PositiveSmallIntegerField()
     locations = models.ManyToManyField(Location)
     role = models.CharField(max_length=9, choices=UserRoles.choices, default=UserRoles.MEMBER)
+    birth_date = models.DateField(null=True, blank=True, validators=[check_age])
+    email = models.EmailField(validators=[RegexValidator(
+        regex=FORBIDDEN_DOMAIN,
+        message="Нельзя с такого домена",
+        inverse_match=True)], unique=True)
 
     def save(self, *args, **kwargs):
         self.set_password(raw_password=self.password)

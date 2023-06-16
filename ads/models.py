@@ -1,3 +1,4 @@
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import UniqueConstraint
 
@@ -5,10 +6,10 @@ from users.models import User
 
 
 class Ad(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, validators=[MinLengthValidator(10)])
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     price = models.PositiveIntegerField()
-    description = models.TextField(max_length=1000, null=True)
+    description = models.TextField(max_length=1000, null=True, blank=True)
     category = models.ForeignKey("ads.Category", on_delete=models.CASCADE)
     is_published = models.BooleanField(default=False)
     image = models.ImageField(upload_to="ad_image", blank=True, null=True)
@@ -47,6 +48,7 @@ class Selection(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=20)
+    slug = models.SlugField(max_length=10, validators=[MinLengthValidator(5)], unique=True)
 
     class Meta:
         verbose_name = "Категория"

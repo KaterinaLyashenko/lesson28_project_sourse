@@ -4,8 +4,10 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, UpdateView
+from rest_framework.viewsets import ModelViewSet
 
 from ads.models import Category
+from ads.serializer import CategorySerializer
 
 
 def root(request):
@@ -13,6 +15,12 @@ def root(request):
         "status": "ok"
     })
 
+class CategoryViewSet(ModelViewSet):
+    class LocationViewSet(ModelViewSet):
+        queryset = Category.objects.all()
+        serializer_class = CategorySerializer
+
+"""
 @method_decorator(csrf_exempt, name='dispatch')
 class CategoryListView(ListView):
     queryset = Category.objects.order_by("name")
@@ -53,4 +61,4 @@ class CategoryDeleteView(DeleteView):
     success_url = "/"
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
-        return JsonResponse({"status": "ok"}, status=200)
+        return JsonResponse({"status": "ok"}, status=200)"""
