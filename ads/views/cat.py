@@ -16,9 +16,8 @@ def root(request):
     })
 
 class CategoryViewSet(ModelViewSet):
-    class LocationViewSet(ModelViewSet):
-        queryset = Category.objects.all()
-        serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 """
 @method_decorator(csrf_exempt, name='dispatch')

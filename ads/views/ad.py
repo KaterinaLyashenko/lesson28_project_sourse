@@ -7,13 +7,15 @@ from rest_framework.viewsets import ModelViewSet
 
 from ads.models import Ad
 from ads.permissions import IsOwner, IsStaff
-from ads.serializer import AdListSerializer, AdSerializer, AdDetailSerializer
+from ads.serializer import AdListSerializer, AdSerializer, AdDetailSerializer, AdCreateSerializer
+
 
 class AdViewSet(ModelViewSet):
     queryset = Ad.objects.all().order_by("-price")
     serializers = {
         "list": AdListSerializer,
         "retrieve": AdDetailSerializer,
+        "create": AdCreateSerializer
     }
     default_serializer = AdSerializer
 

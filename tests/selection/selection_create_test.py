@@ -6,7 +6,7 @@ from tests.fixtures import user_with_access_token
 
 
 @pytest.mark.django_db
-def test_selection_crate(client, access_token):
+def test_selection_crate(client, user_with_access_token):
     ad_list = AdFactory.create_batch(4)
     user, token = user_with_access_token
 
@@ -22,6 +22,6 @@ def test_selection_crate(client, access_token):
         "items": [ad.pk for ad in ad_list]
     }
 
-    response = client.get("/selection/", data=data, HTTP_AUTHORISATION=f"Bearer {token}")
+    response = client.post("/selection/", data=data, HTTP_AUTHORIZATION=f"Bearer {token}")
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data == expected_data

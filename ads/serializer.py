@@ -11,7 +11,7 @@ from users.serializers import LocationSerializer
 
 class UserAdSerializer(ModelSerializer):
     locations = LocationSerializer(many=True)
-    age_of_born = SerializerMethodField()
+    #age_of_born = SerializerMethodField()
 
     """def get_age_of_born(self, obj):
         return datetime.date.today().year - obj.age"""
@@ -26,8 +26,8 @@ class AdSerializer(ModelSerializer):
         fields = "__all__"
 
 class AdCreateSerializer(ModelSerializer):
-    category = SlugRelatedField(many=True, slug_field='name', queryset=Category.objects.all())
-    author = SlugRelatedField(many=True, slug_field='username', queryset=Category.objects.all())
+    category = SlugRelatedField(slug_field='name', queryset=Category.objects.all())
+    author = SlugRelatedField(slug_field='username', queryset=User.objects.all())
     is_published = BooleanField(read_only=True) # required=False,
 
     class Meta:
@@ -35,18 +35,18 @@ class AdCreateSerializer(ModelSerializer):
         fields = "__all__"
 
 class AdListSerializer(ModelSerializer):
-    category = SlugRelatedField(many=True,
+    category = SlugRelatedField(
         slug_field='name', queryset=Category.objects.all())
     user_locations = SerializerMethodField()
     def get_user_locations(self, obj):
-        return [loc.name for loc in obj.author.locatins.all()]
+        return [loc.name for loc in obj.author.locations.all()]
     class Meta:
         model = Ad
         fields = ["name", "price", "category", "user_locations"]
 
 class AdDetailSerializer(ModelSerializer):
     author = UserAdSerializer()
-    category = SlugRelatedField(many=True, slug_field="name", queryset=Category.objects.all())
+    category = SlugRelatedField(slug_field="name", queryset=Category.objects.all())
 
     class Meta:
         model = Ad
